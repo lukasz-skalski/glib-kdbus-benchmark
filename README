@@ -1,0 +1,105 @@
+!!! THIS REPOSITORY IS NO LONGER MAINTAINED AND IS OUTDATED !!!
+
+Please find latests glib with kdbus transport here:
+
+https://github.com/lukasz-skalski/glib
+
+and test for it:
+
+https://github.com/lukasz-skalski/glib-kdbus-tests
+
+===============
+= Description =
+===============
+
+In order to perform tests of glib with kdbus native support I've
+created two programs: gdbus_server and gdbus_client. The first of
+them acts as a server, registers itself on the bus under well-known
+name and waits for calls to its objects and methods. The second one
+(client) makes calls and records periods of time between moment of
+preparing of a call to the moment of receiving and parsing an answer.
+The measurement is made by performing one thousand of calls and
+computing a sum of duration of every call (for different sizes of
+message payload: 4kB, 8kB, 16kB, 32kB, 64kB, 128kB, 256kB, 512kB and
+1MB). The client program returns total time of performed calls after
+successful execution.
+
+
+================
+= Requirements =
+================
+
+* kdbus kernel module,
+* modified version of glib (with kdbus native support),
+* latest systemd from git repository
+
+
+=========
+= KDBUS =
+=========
+
+Simple install procedure:
+
+ * git clone https://code.google.com/p/d-bus/ 	# download kdbus source
+ * cd kdbus 					# change to kdbus directory
+ * make 					# build kdbus module
+ * insmod kdbus.ko 				# load kdbus kernel module
+
+
+===========================
+= GLIB (modified version) =
+===========================
+
+Please find latest patchset here:
+
+https://bugzilla.gnome.org/show_bug.cgi?id=721861
+
+Simple install procedure:
+
+ * cd glib 					# change to glib directory
+ * ./configure --enable-kdbus-transport 	# run the `configure' script
+ * make && make install				# build GLIB
+
+
+======================
+= SYSTEMD-BUS-PROXYD =
+======================
+
+Here is a the step-by-step guide, how to setup a container with
+systemd-bus-proxyd (from systemd) for kdbus testing:
+
+http://people.freedesktop.org/~kay/kdbus-container-install.txt
+
+
+=========
+= TESTS =
+=========
+
+In container:
+
+* Build test binaries:
+
+  cd glib-kdbus-benchmark
+  make
+
+* Set variable to use custom library:
+
+  export LD_LIBRARY_PATH=absolute_path_to_glib_libs_with_kdbus_patch
+
+* Run server in terminal 1:
+
+  ./gdbus_server
+
+* Run client in terminal 2:
+
+  ./gdbus_client
+
+* Sample client app output:
+
+  elapsed time : 0.265072 s
+  elapsed time : 0.264353 s
+  elapsed time : 0.305062 s
+  elapsed time : 0.343710 s
+  elapsed time : 0.451501 s
+  elapsed time : 1.109851 s
+  elapsed time : 8.278217 s
